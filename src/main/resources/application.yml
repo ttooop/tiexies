@@ -1,0 +1,13 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: tiexi_bigsearch
+
+elasticsearch:
+  hosts: 127.0.0.1:9200
+  index-prefix: tiexies-search-index-
+  alias-prefix: tiexies-search-alias-
+
+

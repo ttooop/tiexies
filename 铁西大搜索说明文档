@@ -1,0 +1,63 @@
+沈阳铁西项目公示平台  es搜索搭建
+
+1---ELK搭建
+要求版本6.5.4 去官网下载elasticsearch\logstash\kibana
+es还需要下载ik分词器的插件，https://github.com/medcl/elasticsearch-analysis-ik/releases?after=v6.8.1，下载完之后放到ES的plugins的目录下
+logstash需要下载连接mysql的Jar包现在用的是D:\java_using\logstash-6.5.4\plugins\mysql-connector-java-8.0.18.jar
+
+下载完成后配置配置文件，
+
+2---启动（顺序：es-kibana-logstash）
+后台启动es,9200端口查看是否开启
+后台启动kibana,5601端口查看是否开启
+--若端口未打开成功，一般是服务器未打开端口访问，通过命令打开端口
+
+然后通过dev tools创建索引，注意要提前添加一些设置，包括默认分词器要用ik_max_word
+以及要初始设置新添加的两个字段（用于聚合）要设为keyword
+语句：：：
+PUT sytxgspt1
+{
+  "settings": {
+    "index.number_of_shards":5,
+    "index.number_of_replicas":1,
+    "index.refresh_interval":"60s",
+    "index.analysis.analyzer.default.type":"ik_max_word"
+  },
+  "mappings": {
+    "doc":{
+      "properties":{
+        "tiexi_db_name":{
+          "type":"keyword",
+          "eager_global_ordinals":true
+        },
+        "tiexi_table_name":{
+          "type":"keyword",
+          "eager_global_ordinals":true
+        }
+      }
+    }
+  }
+}
+
+然后通过logstash将MySQL数据导入到es里面
+将写好的conf文件移动到logstash的目录下
+Windows在bin目录下运行：logstah -f ....conf
+
+创建过滤器别名
+POST /_aliases
+{
+  "actions":[
+    {
+      "add":{
+        "index":"sytxgspt1",
+        "alias":"news",
+        "filter":{
+          "term":{
+            "tiexi_db_name": "news"
+          }
+        }
+      }
+    }
+    ]
+}
+使搜索索引为别名时，只搜索过滤器过滤的对应的数据类型的内容
