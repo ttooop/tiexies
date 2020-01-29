@@ -54,6 +54,46 @@ public class AggServiceImpl extends BaseSearch implements AggService {
         content=wordRegular(content);
         Assert.isTrue(StrUtil.isNotBlank(content),"搜索词无效");
 
+        //新闻类聚合
+        log.info("search word in news is {}",content);
+
+        //别名索引，表示只对新闻类的数据进行分类聚合查询
+        SearchRequest newsrequest = new SearchRequest("news");
+
+        QueryStringQueryBuilder stringQueryBuilder=queryStringQueryBuilder(content);
+        //聚合查询
+        /**
+         * .terms(聚类名)
+         * .field(聚类字段)
+         */
+        TermsAggregationBuilder groupByNews=AggregationBuilders.terms("新闻分类").field("category_id");
+
+        //因为只返回类型和条数，所以size为0，不取内容
+        SearchSourceBuilder sourceBuildernews=new SearchSourceBuilder()
+                .query(stringQueryBuilder)
+                .size(0)
+                .aggregation(groupByNews);
+
+        newsrequest.source(sourceBuildernews);
+        SearchResponse newsresponse =client.search(newsrequest,RequestOptions.DEFAULT);
+        log.info("the news response is {} ",newsresponse);
+
+        Map<String,Aggregation> newsAggMap=newsresponse.getAggregations().asMap();
+
+        Terms newsgroup=(Terms) newsAggMap.get("新闻分类");
+        List<Map<String,Object>> newsandnum=new ArrayList<>();
+        for (Terms.Bucket buck :
+                newsgroup.getBuckets()) {
+            String key=buck.getKeyAsString();
+            Long count=buck.getDocCount();
+            Map<String,Object> tmp=new HashMap<>();
+            tmp.put("data",key);
+            tmp.put("count",count);
+            newsandnum.add(tmp);
+        }
+
+        result.put("nesandnum",newsandnum);
+
         log.info("search word is {}",content);
 
         SearchRequest request=new SearchRequest("sytxgspt1");
