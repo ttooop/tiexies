@@ -66,7 +66,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
          * .terms(聚类名)
          * .field(聚类字段)
          */
-        TermsAggregationBuilder groupByNews=AggregationBuilders.terms("新闻分类").field("category_id");
+        TermsAggregationBuilder groupByNews=AggregationBuilders.terms("新闻分类").field("category_id").size(15);
 
         //因为只返回类型和条数，所以size为0，不取内容
         SearchSourceBuilder sourceBuildernews=new SearchSourceBuilder()
@@ -80,23 +80,78 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         Map<String,Aggregation> newsAggMap=newsresponse.getAggregations().asMap();
 
+        /**
+         * 新闻类  category_id
+         *      zfsj
+         *      * categoryId="21"正风肃纪
+         *      bgt
+         *      * categoryId="22"曝光台;
+         *      zcfg
+         *      * categoryId="3"政策法规-中央政策
+         *      * categoryId="4"政策法规-省政策
+         *      * categoryId="5"政策法规-市政策
+         *      * categoryId="2"政策法规-区县政策
+         *      dflzjs
+         *      * categoryId="11"党风廉政建设
+         *      zxjd
+         *      * categoryId="7"专项监督-吃空饷专项
+         *      * categoryId="8"专项监督-公车
+         *      * categoryId="9"专项监督-耕地补贴
+         *      * categoryId="10"专项监督-违规使用经费
+         */
         Terms newsgroup=(Terms) newsAggMap.get("新闻分类");
         List<Map<String,Object>> newsandnum=new ArrayList<>();
+        String[] newscase={"news-zfsj","news-bgt","news-zcfg","news-dflzjs","news-zxjd"};
+        Long[] counts={0L,0L,0L,0L,0L};
         for (Terms.Bucket buck :
                 newsgroup.getBuckets()) {
             String key=buck.getKeyAsString();
             Long count=buck.getDocCount();
+            switch (key){
+                case "21":counts[0]+=count;break;
+                case "22":counts[1]+=count;break;
+                case "2":counts[2]+=count;break;
+                case "3":counts[2]+=count;break;
+                case "4":counts[2]+=count;break;
+                case "5":counts[2]+=count;break;
+                case "11":counts[3]+=count;break;
+                case "7":counts[4]+=count;break;
+                case "8": counts[4]+=count;break;
+                case "9": counts[4]+=count;break;
+                case "10": counts[4]+=count;break;
+//                case "":counts[5]+=count;break;
+            }
+//            if(key.equals("21")){
+//                counts[0]+=count;
+//            }else if (key.equals("22")){
+//                counts[1]+=count;
+//            }
+//            else if (key.equals("2")||key.equals("3")||key.equals("4")||key.equals("5")){
+//                counts[2]+=count;
+//            }else if (key.equals("11")){
+//                counts[3]+=count;
+//            }else if (key.equals("7")||key.equals("8")||key.equals("9")||key.equals("10")){
+//                counts[4]+=count;
+//                System.out.println(counts[4]);
+//            }
+
+        }
+
+        Long newstotal=0L;
+        for (int i = 0; i < newscase.length; i++) {
             Map<String,Object> tmp=new HashMap<>();
-            tmp.put("data",key);
-            tmp.put("count",count);
+            tmp.put("newscase",newscase[i]);
+            tmp.put("count",counts[i]);
+            newstotal+=counts[i];
             newsandnum.add(tmp);
         }
+        result.put("newstotal",newstotal);
 
         result.put("nesandnum",newsandnum);
 
         log.info("search word is {}",content);
 
-        SearchRequest request=new SearchRequest("sytxgspt1");
+        SearchRequest request=new SearchRequest("sytxgspt2");
 
         QueryStringQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
 
@@ -116,15 +171,29 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         Terms dbgroupby=(Terms) aggMap.get("数据分类");
         List<Map<String, Object>> dbandnum=new ArrayList<>();
+        String[] dbcase={"btjzbc","fzbcg","zbcg","cwsw"};
+        Long[] dbcounts={0L,0L,0L,0L};
         for (Terms.Bucket buck :
                 dbgroupby.getBuckets()) {
             String key=buck.getKeyAsString();
             Long count=buck.getDocCount();
+            switch (key){
+                case "btjzbc":dbcounts[0]+=count;break;
+                case "fzbcg":dbcounts[1]+=count;break;
+                case "zbcg":dbcounts[2]+=count;break;
+                case "cwsw":dbcounts[3]+=count;break;
+            }
+        }
+
+        Long dbcount=0L;
+        for (int i = 0; i < dbcase.length; i++) {
             Map<String,Object> tmp=new HashMap<>();
-            tmp.put("data",key);
-            tmp.put("count",count);
+            tmp.put("dbcase",dbcase[i]);
+            tmp.put("count",dbcounts[i]);
+            dbcount+=dbcounts[i];
             dbandnum.add(tmp);
         }
+        result.put("dbtotal",dbcount);
         //dbandnum.stream().forEach(map->System.out.println(map.toString()));
 
         result.put("countmap",dbandnum);
@@ -133,10 +202,14 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         log.info("info search word is {}",content);
 
-        SearchRequest inforequest=new SearchRequest("sytxgspt1");
+        SearchRequest inforequest=new SearchRequest("sytxgspt2");
+
+        String[] fields={"xianshimc","id","tiexi_table_name","content","showtime"};
+
         //获取详情列表
         SearchSourceBuilder infosourceBuilder=new SearchSourceBuilder()
                 .query(queryStringQueryBuilder)
+                .fetchSource(fields,null)
                 .from((curpage-1)*pagesize)
                 .size(pagesize);
 
@@ -177,15 +250,17 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         QueryStringQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
 
+        String[] fields={"xianshimc","id","tiexi_table_name","content","showtime"};
         SearchSourceBuilder sourceBuilder=new SearchSourceBuilder()
                 .query(queryStringQueryBuilder)
+                .fetchSource(fields,null)
                 .from((curpage-1)*pagesize)
                 .size(pagesize);
 
         request.source(sourceBuilder);
 
         SearchResponse response=client.search(request,RequestOptions.DEFAULT);
-
+        log.info("info search result {}",response);
         SearchHit[] searchHits=response.getHits().getHits();
 
         List<Map<String,Object>> typeinfo=new ArrayList<>();
