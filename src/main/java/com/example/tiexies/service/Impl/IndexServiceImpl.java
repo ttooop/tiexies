@@ -1,15 +1,21 @@
 package com.example.tiexies.service.Impl;
 
 import com.example.tiexies.entity.ESIndexDTO;
+import com.example.tiexies.service.BaseSearch;
 import com.example.tiexies.service.IndexService;
+import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.indices.alias.Alias;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +26,8 @@ import java.io.IOException;
 import static com.example.tiexies.Indexenum.IndexEnum.DOC;
 
 @Service
-public class IndexServiceImpl implements IndexService {
+@Slf4j
+public class IndexServiceImpl extends BaseSearch implements IndexService {
 
     @Qualifier("restHighLevelClient")
     @Autowired
@@ -66,5 +73,19 @@ public class IndexServiceImpl implements IndexService {
         client.indices().updateAliases(request,RequestOptions.DEFAULT);
     }
 
+    @Override
+    public void privilegetest(String content,String[] disabledtable,int curpage,int pagesize) throws IOException {
+        SearchRequest request = new SearchRequest("sytxgspt2");
+        BoolQueryBuilder boolQueryBuilder=newquery(content,disabledtable);
+        SearchSourceBuilder sourceBuildernews=new SearchSourceBuilder()
+                .query(boolQueryBuilder)
+                .from((curpage-1)*pagesize)
+                .size(pagesize);
+        request.source(sourceBuildernews);
+        SearchResponse response=client.search(request,RequestOptions.DEFAULT);
+        log.info("the response is {}",response);
+
+
+    }
 
 }

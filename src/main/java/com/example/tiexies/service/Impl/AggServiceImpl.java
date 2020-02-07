@@ -80,25 +80,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         Map<String,Aggregation> newsAggMap=newsresponse.getAggregations().asMap();
 
-        /**
-         * 新闻类  category_id
-         *      zfsj
-         *      * categoryId="21"正风肃纪
-         *      bgt
-         *      * categoryId="22"曝光台;
-         *      zcfg
-         *      * categoryId="3"政策法规-中央政策
-         *      * categoryId="4"政策法规-省政策
-         *      * categoryId="5"政策法规-市政策
-         *      * categoryId="2"政策法规-区县政策
-         *      dflzjs
-         *      * categoryId="11"党风廉政建设
-         *      zxjd
-         *      * categoryId="7"专项监督-吃空饷专项
-         *      * categoryId="8"专项监督-公车
-         *      * categoryId="9"专项监督-耕地补贴
-         *      * categoryId="10"专项监督-违规使用经费
-         */
+
         Terms newsgroup=(Terms) newsAggMap.get("新闻分类");
         List<Map<String,Object>> newsandnum=new ArrayList<>();
         String[] newscase={"news-zfsj","news-bgt","news-zcfg","news-dflzjs","news-zxjd"};
@@ -121,19 +103,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
                 case "10": counts[4]+=count;break;
 //                case "":counts[5]+=count;break;
             }
-//            if(key.equals("21")){
-//                counts[0]+=count;
-//            }else if (key.equals("22")){
-//                counts[1]+=count;
-//            }
-//            else if (key.equals("2")||key.equals("3")||key.equals("4")||key.equals("5")){
-//                counts[2]+=count;
-//            }else if (key.equals("11")){
-//                counts[3]+=count;
-//            }else if (key.equals("7")||key.equals("8")||key.equals("9")||key.equals("10")){
-//                counts[4]+=count;
-//                System.out.println(counts[4]);
-//            }
+
 
         }
 
@@ -204,7 +174,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         SearchRequest inforequest=new SearchRequest("sytxgspt2");
 
-        String[] fields={"xianshimc","id","tiexi_table_name","content","showtime"};
+        String[] fields={"xianshimc","id","tiexi_table_name","content","showtime","tiexi_db_name","category_id"};
 
         //获取详情列表
         SearchSourceBuilder infosourceBuilder=new SearchSourceBuilder()
@@ -225,6 +195,44 @@ public class AggServiceImpl extends BaseSearch implements AggService {
         for (SearchHit s :
                 source) {
             Map<String,Object> tmp=s.getSourceAsMap();
+            /**
+             * 新闻类  category_id
+             *      zfsj
+             *      * categoryId="21"正风肃纪
+             *      bgt
+             *      * categoryId="22"曝光台;
+             *      zcfg
+             *      * categoryId="3"政策法规-中央政策
+             *      * categoryId="4"政策法规-省政策
+             *      * categoryId="5"政策法规-市政策
+             *      * categoryId="2"政策法规-区县政策
+             *      dflzjs
+             *      * categoryId="11"党风廉政建设
+             *      zxjd
+             *      * categoryId="7"专项监督-吃空饷专项
+             *      * categoryId="8"专项监督-公车
+             *      * categoryId="9"专项监督-耕地补贴
+             *      * categoryId="10"专项监督-违规使用经费
+             */
+            if (tmp.containsKey("category_id")){
+                switch (tmp.get("category_id").toString()){
+                    case "21":tmp.replace("category_id","news-zfsj");break;
+                    case "22":tmp.replace("category_id","news-bgt");break;
+                    case "2":tmp.replace("category_id","news-zcfg");break;
+                    case "3":tmp.replace("category_id","news-zcfg");break;
+                    case "4":tmp.replace("category_id","news-zcfg");break;
+                    case "5":tmp.replace("category_id","news-zcfg");break;
+                    case "11":tmp.replace("category_id","news-dflzjs");break;
+                    case "7":tmp.replace("category_id","news-zxjd");break;
+                    case "8": tmp.replace("category_id","news-zxjd");break;
+                    case "9": tmp.replace("category_id","news-zxjd");break;
+                    case "10": tmp.replace("category_id","news-zxjd");break;
+                }
+            }
+//            if(!tmp.get("tiexi_db_name").equals("news")){
+//                tmp.replace("tiexi_db_name","jiandu");
+//            }
+//            System.out.println(tmp.toString());
             inforesult.add(tmp);
         }
 
@@ -250,7 +258,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         QueryStringQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
 
-        String[] fields={"xianshimc","id","tiexi_table_name","content","showtime"};
+        String[] fields={"xianshimc","id","tiexi_table_name","content","showtime","tiexi_db_name","category_id"};
         SearchSourceBuilder sourceBuilder=new SearchSourceBuilder()
                 .query(queryStringQueryBuilder)
                 .fetchSource(fields,null)
@@ -267,7 +275,23 @@ public class AggServiceImpl extends BaseSearch implements AggService {
         for (SearchHit s :
                 searchHits) {
             Map<String,Object> tmp=s.getSourceAsMap();
+            if (tmp.containsKey("category_id")){
+                switch (tmp.get("category_id").toString()){
+                    case "21":tmp.replace("category_id","news-zfsj");break;
+                    case "22":tmp.replace("category_id","news-bgt");break;
+                    case "2":tmp.replace("category_id","news-zcfg");break;
+                    case "3":tmp.replace("category_id","news-zcfg");break;
+                    case "4":tmp.replace("category_id","news-zcfg");break;
+                    case "5":tmp.replace("category_id","news-zcfg");break;
+                    case "11":tmp.replace("category_id","news-dflzjs");break;
+                    case "7":tmp.replace("category_id","news-zxjd");break;
+                    case "8": tmp.replace("category_id","news-zxjd");break;
+                    case "9": tmp.replace("category_id","news-zxjd");break;
+                    case "10": tmp.replace("category_id","news-zxjd");break;
+                }
+            }
             typeinfo.add(tmp);
+//            System.out.println(tmp.toString());
         }
 
         result.put("searchword",content);
