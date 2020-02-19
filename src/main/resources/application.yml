@@ -4,6 +4,57 @@ server:
 spring:
   application:
     name: tiexi_bigsearch
+#  datasource:
+#    #username: businessuseratcloudadmin
+#    #password: ict@cloud
+#    username: root
+#    password: 12345678
+#    #username: cloud
+#    #password: 123456
+#    #username: root
+#    #password: 12345678
+#    #username: root
+#    #password: root
+#    #driver-class-name: com.mysql.jdbc.Driver
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    #url: jdbc:mysql://10.40.16.11:3306/cloud_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    #url: jdbc:mysql://10.40.16.66:3306/sytxgspt2.0?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    url: jdbc:mysql://127.0.0.1:3306/cloud_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    #url: jdbc:mysql://127.0.0.1:3306/cloud_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    #url: jdbc:mysql://192.168.124.100:3306/cloud_admin?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    #type: com.alibaba.druid.pool.DruidDataSource
+#    maxActive: 20
+#    initialSize: 5
+#    maxWait: 60000
+#    minIdle: 25
+#    #集成Redis缓存功能.
+#    redis:
+#      host: 127.0.0.1
+#      port: 6379
+#      password: ict@123
+#    main:
+#      allow-bean-definition-overriding: true
+#
+#  #启用mybatis框架
+#  mybatis:
+#    mapper-locations: classpath*:mapping/*.xml
+#    configuration:
+#      map-undersore-to-camel-case: true
+#  pagehelper:
+#    helperDialect: mysql
+#    reasonable: true
+#    supportMethodsArguments: true
+#    params: count=countSql
+#    returnPageInfo: check
+#
+#  eureka:
+#    client:
+#      service-url:
+#        defaultZone: http://localhost:9000/eureka/
+#      registry-fetch-interval-seconds: 5
+#    instance:
+#      lease-expiration-duration-in-seconds: 60
+
 
 elasticsearch:
   hosts: 127.0.0.1:9200

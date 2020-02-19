@@ -9,5 +9,5 @@ public interface IndexService {
     void createIndex(ESIndexDTO esIndexDTO) throws IOException;
 
     void addAlias(String indexName,long tableId) throws IOException;
-    public void privilegetest(String content,String[] disabledtable,int curpage,int pagesize) throws IOException;
+    public void privilegetest(String content,int curpage,int pagesize,String... disabledtable) throws IOException;
 }

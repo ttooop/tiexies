@@ -64,4 +64,16 @@ public class ESController {
         return aggService.typesearchByDB(indexname,content,curpage,pagesize);
     }
 
+    @ApiOperation(value = "聚合获取搜索表名")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "content",value = "搜索内容",paramType = "query",required = true)
+    })
+    @GetMapping("/search/tablelist")
+    public Result getTableList(@RequestParam(value = "content",required = true) String content) throws IOException {
+        if (content==" "||content==null){
+            return Result.create("抱歉搜索条件不能为空","501");
+        }
+        return aggService.getTableName(content);
+    }
+
 }

@@ -74,7 +74,7 @@ public class IndexServiceImpl extends BaseSearch implements IndexService {
     }
 
     @Override
-    public void privilegetest(String content,String[] disabledtable,int curpage,int pagesize) throws IOException {
+    public void privilegetest(String content,int curpage,int pagesize,String... disabledtable) throws IOException {
         SearchRequest request = new SearchRequest("sytxgspt2");
         BoolQueryBuilder boolQueryBuilder=newquery(content,disabledtable);
         SearchSourceBuilder sourceBuildernews=new SearchSourceBuilder()

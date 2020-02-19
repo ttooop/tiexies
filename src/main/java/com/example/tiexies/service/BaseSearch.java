@@ -25,14 +25,21 @@ public class BaseSearch {
     @Value("${elasticsearch.alias-prefix}")
     protected String aliasPrefix;
 
-    protected QueryStringQueryBuilder queryStringQueryBuilder(String content){
+    protected BoolQueryBuilder queryStringQueryBuilder(String content,String... disabledtable){
         QueryStringQueryBuilder queryBuilder= QueryBuilders
                 .queryStringQuery(content)
                 .defaultOperator(Operator.AND)
                 .fuzzyTranspositions(false);
-        return queryBuilder;
+        BoolQueryBuilder disboolQueryBuilder=QueryBuilders.boolQuery();
+        for (int i = 0; i < disabledtable.length; i++) {
+            disboolQueryBuilder.mustNot(QueryBuilders.matchQuery("tiexi_table_name",disabledtable[i]));
+        }
+
+        BoolQueryBuilder boolQueryBuilder=QueryBuilders
+                .boolQuery().must(queryBuilder).must(disboolQueryBuilder);
+        return boolQueryBuilder;
     }
-    protected BoolQueryBuilder newquery(String content,String[] disabledtable){
+    protected BoolQueryBuilder newquery(String content,String ... disabledtable){
         QueryStringQueryBuilder queryBuilder= QueryBuilders
                 .queryStringQuery(content)
                 .defaultOperator(Operator.AND)

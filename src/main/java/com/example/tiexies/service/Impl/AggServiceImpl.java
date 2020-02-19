@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
 import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -48,7 +49,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
      * @throws IOException
      */
     @Override
-    public Result aggByDB(String content, int curpage, int pagesize) throws IOException {
+    public Result aggByDB(String content, int curpage, int pagesize,String ... disabledtable) throws IOException {
         Map<String,Object> result=new HashMap<>();
 
         content=wordRegular(content);
@@ -60,7 +61,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
         //别名索引，表示只对新闻类的数据进行分类聚合查询
         SearchRequest newsrequest = new SearchRequest("news");
 
-        QueryStringQueryBuilder stringQueryBuilder=queryStringQueryBuilder(content);
+        BoolQueryBuilder stringQueryBuilder=queryStringQueryBuilder(content);
         //聚合查询
         /**
          * .terms(聚类名)
@@ -123,7 +124,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         SearchRequest request=new SearchRequest("sytxgspt2");
 
-        QueryStringQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
+        BoolQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
 
         TermsAggregationBuilder dbGroupByAGG= AggregationBuilders.terms("数据分类").field("tiexi_db_name");
 
@@ -239,7 +240,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
         //inforesult.stream().forEach(s-> System.out.println(s.toString()));
 
         result.put("searchword",content);
-        result.put("totalhits",inforesponse.getHits().getTotalHits());
+        result.put("totalhits",inforesponse.getHits().getTotalHits()-1);
         result.put("infolist",inforesult);
 
 
@@ -247,7 +248,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
     }
 
     @Override
-    public Result typesearchByDB(String indexname, String content, int curpage, int pagesize) throws IOException {
+    public Result typesearchByDB(String indexname, String content, int curpage, int pagesize,String ... disabledtable) throws IOException {
 
         Map<String,Object> result=new HashMap<>();
         content=wordRegular(content);
@@ -256,7 +257,7 @@ public class AggServiceImpl extends BaseSearch implements AggService {
         log.info("search word is {}",content);
         SearchRequest request=new SearchRequest(indexname);
 
-        QueryStringQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
+        BoolQueryBuilder queryStringQueryBuilder=queryStringQueryBuilder(content);
 
         String[] fields={"xianshimc","id","tiexi_table_name","content","showtime","tiexi_db_name","category_id"};
         SearchSourceBuilder sourceBuilder=new SearchSourceBuilder()
@@ -302,4 +303,39 @@ public class AggServiceImpl extends BaseSearch implements AggService {
 
         return Result.create(result);
     }
+
+    @Override
+    public Result getTableName(String content) throws IOException {
+        Map<String,Object> result = new HashMap<>();
+
+        content=wordRegular(content);
+        Assert.isTrue(StrUtil.isNotBlank(content),"搜索词无效");
+
+        SearchRequest request=new SearchRequest("sytxgspt2");
+        BoolQueryBuilder queryBuilder=queryStringQueryBuilder(content);
+
+        TermsAggregationBuilder groupbyTablename=AggregationBuilders.terms("表名聚合").field("tiexi_table_name");
+
+        SearchSourceBuilder sourceBuilder=new SearchSourceBuilder()
+                .query(queryBuilder)
+                .size(0)
+                .aggregation(groupbyTablename);
+
+        request.source(sourceBuilder);
+        SearchResponse response=client.search(request, RequestOptions.DEFAULT);
+//        log.info("group by tablename: ",response);
+
+        Map<String,Aggregation> tablenameAggMap=response.getAggregations().getAsMap();
+        Terms tablegroup=(Terms) tablenameAggMap.get("表名聚合");
+        List<String> tablelist=new ArrayList<>();
+        for (Terms.Bucket buck :
+                tablegroup.getBuckets()) {
+            String key = buck.getKeyAsString();
+            tablelist.add(key);
+        }
+        result.put("groupBytable",tablelist);
+        return Result.create(result);
+    }
+
+
 }

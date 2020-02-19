@@ -1,5 +1,6 @@
 package com.example.tiexies;
 
+import com.example.tiexies.entity.Result;
 import com.example.tiexies.service.AggService;
 import com.example.tiexies.service.IndexService;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -26,7 +27,9 @@ class TiexiesApplicationTests {
 
     @Test
     void privilegetest() throws IOException {
-        indexService.privilegetest("铁西",new String[]{""},1,1);
+//        indexService.privilegetest("铁西",1,5,"cms_article");
+        Result result=aggService.getTableName("铁西");
+        System.out.println(result.getData());
     }
 
 }
